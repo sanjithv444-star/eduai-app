@@ -1,9 +1,314 @@
 {% extends "base.html" %}
 {% block title %}Teacher Dashboard{% endblock %}
 {% block page_title %}Teacher Dashboard{% endblock %}
+
+{% block extra_head %}
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 24px;
+    }
+    
+    .stat-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+    }
+    
+    .stat-card h2 {
+        font-size: 2.5rem;
+        color: var(--primary);
+        margin-bottom: 8px;
+    }
+    
+    /* Modern Table Styles */
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 16px;
+    }
+    
+    .data-table th, .data-table td {
+        padding: 16px;
+        text-align: left;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .data-table th {
+        color: var(--text-secondary);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 1px;
+    }
+    
+    .data-table tbody tr:hover {
+        background: rgba(255,255,255,0.02);
+    }
+    
+    /* Modal Styles */
+    .modal {
+        display: none; 
+        position: fixed; 
+        z-index: 1000; 
+        left: 0;
+        top: 0;
+        width: 100%; 
+        height: 100%; 
+        overflow: auto; 
+        background-color: rgba(0,0,0,0.7); 
+        backdrop-filter: blur(5px);
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal-content {
+        background-color: #0f172a;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 32px;
+        width: 90%;
+        max-width: 500px;
+        position: relative;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    
+    .close-btn {
+        color: var(--text-secondary);
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    
+    .close-btn:hover {
+        color: white;
+    }
+    
+    .form-group {
+        margin-bottom: 16px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--text-secondary);
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: white;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary);
+    }
+    
+    .action-btn {
+        background: rgba(99, 102, 241, 0.1);
+        color: var(--primary);
+        border: 1px solid var(--primary);
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-right: 8px;
+    }
+    
+    .action-btn:hover {
+        background: var(--primary);
+        color: white;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="glass-card">
-    <h3>Welcome, {{ current_user.username }}!</h3>
-    <p>This is your teacher dashboard.</p>
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="glass-card" style="margin-bottom: 20px; border-left: 4px solid {% if category == 'success' %}var(--success){% else %}var(--danger){% endif %}; padding: 12px 20px;">
+          {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<!-- Top Stats -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <h2>{{ students|length }}</h2>
+        <p style="color: var(--text-secondary);">Total Enrolled Students</p>
+    </div>
+    <div class="stat-card">
+        <h2>{{ courses.count() }}</h2>
+        <p style="color: var(--text-secondary);">Active Courses Taught</p>
+    </div>
+    <div class="stat-card">
+        <h2><i class="fa-solid fa-cloud-arrow-up"></i></h2>
+        <p style="color: var(--text-secondary);">Real-time Sync Active</p>
+    </div>
 </div>
+
+<!-- Student Data Table -->
+<div class="glass-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3><i class="fa-solid fa-users" style="color: var(--primary); margin-right: 10px;"></i> Student Management</h3>
+    </div>
+    
+    {% if students %}
+    <div style="overflow-x: auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Name</th>
+                    <th>Batch</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>#{{ student.id }}</td>
+                    <td style="font-weight: 600; color: var(--text-primary);">{{ student.user.username }}</td>
+                    <td>{{ student.batch }}</td>
+                    <td>
+                        <button class="action-btn" onclick="openMarkModal('{{ student.id }}', '{{ student.user.username }}')">
+                            <i class="fa-solid fa-plus"></i> Add Grade
+                        </button>
+                        <button class="action-btn" style="border-color: var(--success); color: var(--success);" onclick="openAttendanceModal('{{ student.id }}', '{{ student.user.username }}')">
+                            <i class="fa-solid fa-check"></i> Attendance
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="color: var(--text-secondary);">No students enrolled in your courses yet.</p>
+    {% endif %}
+</div>
+
+<!-- Add Mark Modal -->
+<div id="markModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModals()">&times;</span>
+        <h3 style="margin-bottom: 20px; color: var(--primary);">Add Grade for <span id="markStudentName"></span></h3>
+        
+        <form action="{{ url_for('teacher.add_mark') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <input type="hidden" name="student_id" id="markStudentId">
+            
+            <div class="form-group">
+                <label>Course</label>
+                <select name="course_id" class="form-control" required>
+                    <option value="" disabled selected>Select a Course...</option>
+                    {% for course in courses %}
+                    <option value="{{ course.id }}">{{ course.code }} - {{ course.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Assessment Title (e.g., Midterm Exam)</label>
+                <input type="text" name="assessment_title" class="form-control" required>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                    <label>Marks Obtained</label>
+                    <input type="number" step="0.1" name="marks_obtained" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Out of (Max Marks)</label>
+                    <input type="number" step="1" name="max_marks" value="100" class="form-control" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Feedback (Optional)</label>
+                <input type="text" name="feedback" class="form-control" placeholder="Great improvement!">
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Save Grade to Database</button>
+        </form>
+    </div>
+</div>
+
+<!-- Add Attendance Modal -->
+<div id="attendanceModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModals()">&times;</span>
+        <h3 style="margin-bottom: 20px; color: var(--success);">Mark Attendance for <span id="attStudentName"></span></h3>
+        
+        <form action="{{ url_for('teacher.add_attendance') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <input type="hidden" name="student_id" id="attStudentId">
+            
+            <div class="form-group">
+                <label>Course</label>
+                <select name="course_id" class="form-control" required>
+                    <option value="" disabled selected>Select a Course...</option>
+                    {% for course in courses %}
+                    <option value="{{ course.id }}">{{ course.code }} - {{ course.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Status</label>
+                <select name="status" class="form-control" required>
+                    <option value="present">✅ Present</option>
+                    <option value="absent">❌ Absent</option>
+                    <option value="late">⏱️ Late</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px; background-color: var(--success);">Save Attendance</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Modal Logic
+    const markModal = document.getElementById("markModal");
+    const attModal = document.getElementById("attendanceModal");
+
+    function openMarkModal(studentId, studentName) {
+        document.getElementById("markStudentId").value = studentId;
+        document.getElementById("markStudentName").innerText = studentName;
+        markModal.style.display = "flex";
+    }
+
+    function openAttendanceModal(studentId, studentName) {
+        document.getElementById("attStudentId").value = studentId;
+        document.getElementById("attStudentName").innerText = studentName;
+        attModal.style.display = "flex";
+    }
+
+    function closeModals() {
+        markModal.style.display = "none";
+        attModal.style.display = "none";
+    }
+
+    // Close if clicking outside
+    window.onclick = function(event) {
+        if (event.target == markModal) markModal.style.display = "none";
+        if (event.target == attModal) attModal.style.display = "none";
+    }
+</script>
 {% endblock %}
