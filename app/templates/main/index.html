@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}EduAI - Home{% endblock %}
+{% block page_title %}Welcome to EduAI{% endblock %}
+
+{% block content %}
+<div class="hero-section" style="text-align: center; padding: 60px 20px;">
+    <h1 style="font-size: 3rem; margin-bottom: 20px; color: var(--primary);">AI-Powered Student Success</h1>
+    <p style="font-size: 1.2rem; color: var(--text-secondary); max-width: 600px; margin: 0 auto 40px;">
+        Predict performance, discover personalized learning paths, and achieve academic excellence with our cutting-edge AI system.
+    </p>
+    {% if not current_user.is_authenticated %}
+    <a href="{{ url_for('auth.login') }}" class="btn btn-primary" style="font-size: 1.1rem; padding: 12px 32px;">Get Started</a>
+    {% endif %}
+</div>
+
+<div class="features-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-top: 40px;">
+    <div class="glass-card">
+        <h3 style="color: var(--secondary); margin-bottom: 12px;"><i class="fa-solid fa-brain"></i> Performance Prediction</h3>
+        <p style="color: var(--text-secondary);">Advanced Machine Learning algorithms analyze your academic history to predict future performance and identify areas for improvement.</p>
+    </div>
+    <div class="glass-card">
+        <h3 style="color: var(--primary); margin-bottom: 12px;"><i class="fa-solid fa-route"></i> Personalized Learning</h3>
+        <p style="color: var(--text-secondary);">Receive custom study recommendations, tutorials, and practice materials tailored to your unique learning gaps.</p>
+    </div>
+    <div class="glass-card">
+        <h3 style="color: var(--warning); margin-bottom: 12px;"><i class="fa-solid fa-chart-line"></i> Interactive Analytics</h3>
+        <p style="color: var(--text-secondary);">Visualize attendance, grades, and progress over time with our dynamic, easy-to-understand dashboards.</p>
+    </div>
+</div>
+{% endblock %}

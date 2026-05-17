@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EduAI - Student Performance Prediction{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        {% if current_user.is_authenticated %}
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fa-solid fa-graduation-cap"></i> EduAI</h2>
+            </div>
+            <ul class="nav-links">
+                {% if current_user.role == 'student' %}
+                <li><a href="{{ url_for('student.dashboard') }}"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
+                <li><a href="{{ url_for('student.profile') }}"><i class="fa-solid fa-user"></i> Profile</a></li>
+                <li><a href="{{ url_for('student.analytics') }}"><i class="fa-solid fa-chart-pie"></i> Analytics</a></li>
+                <li><a href="{{ url_for('student.recommendations') }}"><i class="fa-solid fa-lightbulb"></i> Recommendations</a></li>
+                {% elif current_user.role == 'teacher' %}
+                <li><a href="{{ url_for('teacher.dashboard') }}"><i class="fa-solid fa-chalkboard-user"></i> Dashboard</a></li>
+                {% elif current_user.role == 'admin' %}
+                <li><a href="{{ url_for('admin.dashboard') }}"><i class="fa-solid fa-screwdriver-wrench"></i> Dashboard</a></li>
+                {% endif %}
+                <li class="logout-link"><a href="{{ url_for('auth.logout') }}"><i class="fa-solid fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </nav>
+        {% endif %}
+
+        <!-- Main Content Area -->
+        <main class="main-content {% if not current_user.is_authenticated %}full-width{% endif %}">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button id="menu-toggle" class="mobile-only"><i class="fa-solid fa-bars"></i></button>
+                    <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+                </div>
+                <div class="header-right">
+                    {% if current_user.is_authenticated %}
+                    <div class="user-profile">
+                        <span class="username">{{ current_user.username }}</span>
+                        <div class="avatar">{{ current_user.username[0] | upper }}</div>
+                    </div>
+                    {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Login</a>
+                    {% endif %}
+                </div>
+            </header>
+
+            <!-- Flash Messages -->
+            <div class="flash-messages">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">
+                                {{ message }}
+                                <span class="close-btn" onclick="this.parentElement.style.display='none';">&times;</span>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+
+            <!-- Page Content -->
+            <div class="content-area">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

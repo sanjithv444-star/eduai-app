@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Student Dashboard{% endblock %}
+{% block page_title %}Student Dashboard{% endblock %}
+{% block content %}
+<div class="glass-card">
+    <h3>Welcome, {{ current_user.username }}!</h3>
+    <p>This is your student dashboard.</p>
+</div>
+{% endblock %}

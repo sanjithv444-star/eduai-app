@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Student Analytics{% endblock %}
+{% block page_title %}Analytics Dashboard{% endblock %}
+{% block content %}
+<div class="glass-card" style="margin-bottom: 24px;">
+    <h3 style="color: var(--primary); margin-bottom: 16px;"><i class="fa-solid fa-brain"></i> AI Performance Prediction</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+            <p style="color: var(--text-secondary); margin-bottom: 8px;">Predicted Final Marks</p>
+            <h2 style="font-size: 2.5rem; color: var(--text-primary);">{{ "%.1f"|format(predicted_mark) }}%</h2>
+        </div>
+        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+            <p style="color: var(--text-secondary); margin-bottom: 8px;">Performance Category</p>
+            <h2 style="font-size: 2rem; color: {% if category == 'Excellent' %}var(--success){% elif category == 'Good' %}var(--warning){% else %}var(--danger){% endif %};">
+                {{ category }}
+            </h2>
+        </div>
+        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+            <p style="color: var(--text-secondary); margin-bottom: 8px;">Current Attendance</p>
+            <h2 style="font-size: 2rem; color: var(--primary);">{{ "%.1f"|format(attendance) }}%</h2>
+        </div>
+    </div>
+</div>
+
+<div class="glass-card">
+    <h3 style="color: var(--secondary); margin-bottom: 16px;"><i class="fa-solid fa-lightbulb"></i> AI Recommendation</h3>
+    <p style="font-size: 1.1rem; line-height: 1.6;">{{ recommendation }}</p>
+</div>
+{% endblock %}

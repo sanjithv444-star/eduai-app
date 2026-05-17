@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Student Profile{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+{% block content %}
+<div class="glass-card">
+    <h3>{{ current_user.username }}'s Profile</h3>
+    <p>View your personal and academic information here.</p>
+</div>
+{% endblock %}
